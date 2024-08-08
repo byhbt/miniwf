@@ -13,3 +13,4 @@ jobs:
         run: | 
           echo "Tag (ref): ${{ github.ref }}"
           echo "Tag (ref_name): ${{ github.ref_name }}"
+          echo "Start with ref: ${{ startsWith(github.ref, 'refs/tags/') }}"
