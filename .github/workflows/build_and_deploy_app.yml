@@ -10,4 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print Tag
-        run: echo "Tag: ${{ github.ref }}"
+        run: | 
+          echo "Tag (ref): ${{ github.ref }}"
+          echo "Tag (ref_name): ${{ github.ref_name }}"
