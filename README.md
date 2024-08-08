@@ -1,9 +1,11 @@
 # Mini Workflow
 
-Testing the event trigger via mini workflow.
+- Testing the event trigger via mini workflow.
 
-This is a very simple workflow.
+- This is a very simple workflow.
 
-Content for the version 0.2.0
+- Content for the version 0.2.0
 
-Adding the Github Action debug `ACTIONS_RUNNER_DEBUG`, `ACTIONS_STEP_DEBUG`
+- Adding the Github Action debug `ACTIONS_RUNNER_DEBUG`, `ACTIONS_STEP_DEBUG`
+
+- Adding more debug information to the workflow.
