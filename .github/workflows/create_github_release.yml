@@ -43,16 +43,20 @@ jobs:
 
           echo "release_pr_number=${release_pr_number}" >> $GITHUB_OUTPUT
 
-      - name: Fetch and save latest release PR notes
-        env:
-          GH_TOKEN: ${{ github.token }}
+      # - name: Fetch and save latest release PR notes
+      #   env:
+      #     GH_TOKEN: ${{ github.token }}
+      #   run: |
+      #     gh pr view \
+      #       ${{ steps.find_latest_release_pr.outputs.release_pr_number }} \
+      #       --json body \
+      #       --template '{{.body}}' \
+      #       > release-notes.txt
+      - name: Default release notes
+        if: steps.find_latest_release_pr.outputs.release_pr_number == ''
         run: |
-          gh pr view \
-            ${{ steps.find_latest_release_pr.outputs.release_pr_number }} \
-            --json body \
-            --template '{{.body}}' \
-            > release-notes.txt
-
+          echo "Hello world" > release-notes.txt
+          echo "Tag: ${{ github.ref }}" >> release-notes.txt
       - name: Create Github release and tag
         env:
           GH_TOKEN: ${{ github.token }}
