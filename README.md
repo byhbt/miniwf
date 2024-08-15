@@ -10,4 +10,4 @@
 
 - Adding more Debug information to the workflow.
 
-- Adding create Github workflow.
+- Adding create release Github workflow.
