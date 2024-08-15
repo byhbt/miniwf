@@ -8,4 +8,6 @@
 
 - Adding the Github Action debug `ACTIONS_RUNNER_DEBUG`, `ACTIONS_STEP_DEBUG`
 
-- Adding more debug information to the workflow.
+- Adding more Debug information to the workflow.
+
+- Adding create Github workflow.

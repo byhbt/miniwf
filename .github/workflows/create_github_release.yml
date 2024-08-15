@@ -1,0 +1,78 @@
+name: Create github release and tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_version:
+        description: Tag version
+        required: true
+
+jobs:
+  create_github_release:
+    name: Create Github release and tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: stage
+
+      - name: Set tag version
+        id: set_tag_version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            tag_version=${{ inputs.tag_version }}
+          elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            tag_version=${{ github.event.client_payload.tag_version }}
+          fi
+
+          echo "tag_version=${tag_version}" >> $GITHUB_OUTPUT
+
+      - name: Find latest release PR number
+        id: find_latest_release_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_pr_number=$(gh pr list \
+            --label "type : release" \
+            --state all \
+            --limit 1 \
+            --json number \
+            --template '{{range .}}{{.number}}{{end}}')
+
+          echo "release_pr_number=${release_pr_number}" >> $GITHUB_OUTPUT
+
+      - name: Fetch and save latest release PR notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr view \
+            ${{ steps.find_latest_release_pr.outputs.release_pr_number }} \
+            --json body \
+            --template '{{.body}}' \
+            > release-notes.txt
+
+      - name: Create Github release and tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create \
+            ${{ steps.set_tag_version.outputs.tag_version }} \
+            --title ${{ steps.set_tag_version.outputs.tag_version }} \
+            --target stage \
+            --notes-file release-notes.txt
+
+      - name: Process release notes for tag description
+        run: |
+          # remove all lines that start with "## ", because git removes full line if it starts with "#"
+          sed -i 's/## //g' release-notes.txt
+
+      - name: Update tag description
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config --global user.email "bot@nimblehq.co"
+          git config --global user.name "Nimble"
+          git tag -a ${{ steps.set_tag_version.outputs.tag_version }} -F release-notes.txt -f
+          git push origin ${{ steps.set_tag_version.outputs.tag_version }} --force
