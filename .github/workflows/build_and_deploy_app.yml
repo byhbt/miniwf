@@ -2,8 +2,9 @@ name: Deploy App
 
 on:
   push:
-    tags:
-      - "*"
+    branches:
+      - dev
+      - main
   workflow_run:
     workflows: ["Create github release and tag"]
     types:
