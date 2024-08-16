@@ -1,9 +1,9 @@
-name: Test Tag Trigger
+name: Deploy App
 
 on:
   push:
     tags:
-      - '*'
+      - "*"
   workflow_run:
     workflows: ["Create github release and tag"]
     types:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print Tag
-        run: | 
+        run: |
           echo "Tag (ref): ${{ github.ref }}"
           echo "Tag (ref_name): ${{ github.ref_name }}"
           echo "Start with ref: ${{ startsWith(github.ref, 'refs/tags/') }}"
