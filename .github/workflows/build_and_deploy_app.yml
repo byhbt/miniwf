@@ -12,6 +12,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_run' && github.ref == 'refs/heads/main' && 'production' || github.event_name == 'push' && github.ref == 'refs/heads/main' && 'staging' || 'dev'}}
     steps:
       - name: Print Tag
         run: |
@@ -29,3 +30,6 @@ jobs:
         run: |
           echo "Event payload:"
           echo "$EVENT_PAYLOAD"
+      - name: Dump environment name
+        run: |
+          echo "Environment: ${{ env.CURRENT_ENV }}" # production, staging, dev
