@@ -13,6 +13,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     environment: ${{ github.event_name == 'workflow_run' && github.ref == 'refs/heads/main' && 'production' || github.event_name == 'push' && github.ref == 'refs/heads/main' && 'staging' || 'dev'}}
+    env:
+      CURRENT_ENV: ${{ github.event_name == 'workflow_run' && github.ref == 'refs/heads/main' && 'production' || github.event_name == 'push' && github.ref == 'refs/heads/main' && 'staging' || 'dev'}}
     steps:
       - name: Print Tag
         run: |
