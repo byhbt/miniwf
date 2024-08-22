@@ -5,22 +5,46 @@ on:
     branches:
       - dev
       - main
+  workflow_dispatch:
   workflow_run:
     workflows: ["Create github release and tag"]
     types:
       - completed
 jobs:
-  test:
+  set-environment:
+    name: Set environment
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'workflow_run' && github.ref == 'refs/heads/main' && 'production' || github.event_name == 'push' && github.ref == 'refs/heads/main' && 'staging' || 'dev'}}
-    env:
-      CURRENT_ENV: ${{ github.event_name == 'workflow_run' && github.ref == 'refs/heads/main' && 'production' || github.event_name == 'push' && github.ref == 'refs/heads/main' && 'staging' || 'dev'}}
+    outputs:
+      environment: ${{ steps.set_env.outputs.environment }}
     steps:
+      - name: Set environment
+        id: set_env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_run" ]; then
+            echo "environment=prod" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "environment=stage" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+  build_and_deploy:
+    name: Build Docker image, push to ECR, and deploy to ECS
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - set-environment
+    environment: ${{ needs.set-environment.outputs.environment }}
+    steps:
+      - name: Set ECS environment variables
+        id: set_vars
+        run: |
+          ENVIRONMENT=${{ needs.set-environment.outputs.environment }}
+          echo "ECS_CLUSTER=sample-app-${ENVIRONMENT}-ecs-cluster" >> $GITHUB_ENV
       - name: Print Tag
         run: |
           echo "Tag (ref): ${{ github.ref }}"
           echo "Tag (ref_name): ${{ github.ref_name }}"
-          echo "Start with ref: ${{ startsWith(github.ref, 'refs/tags/') }}"
           echo "Event name: ${{ github.event_name }}"
       - name: Check if tag push event
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
@@ -34,4 +58,4 @@ jobs:
           echo "$EVENT_PAYLOAD"
       - name: Dump environment name
         run: |
-          echo "Environment: ${{ env.CURRENT_ENV }}" # production, staging, dev
+          echo "Environment: ${{ needs.set-environment.outputs.environment }}" # prod, stage, dev
