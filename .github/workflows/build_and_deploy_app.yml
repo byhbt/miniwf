@@ -20,7 +20,7 @@ jobs:
       - name: Set environment
         id: set_env
         run: |
-          if [ "${{ github.event_name }}" == "workflow_run" ]; then
+          if [ "${{ github.event_name }}" == "workflow_run" ] && [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "environment=prod" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "environment=stage" >> $GITHUB_OUTPUT
@@ -29,6 +29,7 @@ jobs:
           fi
         shell: bash
   build_and_deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Proceed only if Workflow A succeeded
     name: Build Docker image, push to ECR, and deploy to ECS
     runs-on: ubuntu-latest
     timeout-minutes: 10
