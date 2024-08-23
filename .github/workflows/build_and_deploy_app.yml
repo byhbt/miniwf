@@ -46,12 +46,22 @@ jobs:
           echo "Tag (ref): ${{ github.ref }}"
           echo "Tag (ref_name): ${{ github.ref_name }}"
           echo "Event name: ${{ github.event_name }}"
+      - name: Set branch variable
+        id: set-branch
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_run" ]; then
+            echo "BRANCH=main" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_name }}" == "main" ]; then
+            echo "BRANCH=main" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_name }}" == "dev" ]; then
+            echo "BRANCH=dev" >> $GITHUB_ENV
+          else
+            echo "BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: |
-            ${{ github.ref_name }}  # For push and workflow_dispatch
-            ${{ github.event.workflow_run.head_branch }}  # For workflow_run
+          ref: ${{ env.BRANCH }}
       - name: Check if tag push event
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         run: |
