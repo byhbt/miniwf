@@ -6,10 +6,10 @@ on:
       - dev
       - main
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Create github release and tag"]
-    types:
-      - completed
+  # workflow_run:
+  #   workflows: ["Create github release and tag"]
+  #   types:
+  #     - completed
 jobs:
   set-environment:
     name: Set environment
@@ -29,7 +29,6 @@ jobs:
           fi
         shell: bash
   build_and_deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Proceed only if Workflow A succeeded
     name: Build Docker image, push to ECR, and deploy to ECS
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -50,7 +49,7 @@ jobs:
       - name: Set branch variable
         id: set-branch
         run: |
-          if [ "${{ github.event_name }}" == "workflow_run" ]; then
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "BRANCH=main" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_name }}" == "main" ]; then
             echo "BRANCH=main" >> $GITHUB_ENV
